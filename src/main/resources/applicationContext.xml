@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd http://www.springframework.org/schema/context https://www.springframework.org/schema/context/spring-context.xsd">
+
+
+    <!--
+    1. 扫描 com.hspedu 包
+    2. context:exclude-filter 配置说明 不扫描控制器 因为springmvc接管了
+    -->
+    <context:component-scan base-package="com.hspedu.furn">
+        <context:exclude-filter type="annotation"
+                                expression="org.springframework.stereotype.Controller"/>
+    </context:component-scan>
+
+
+    <!-- 引入外部属性文件 -->
+    <context:property-placeholder location="classpath:jdbc.properties"/>
+    <!-- 配置数据源 -->
+    <bean id="pooledDataSource" class="com.alibaba.druid.pool.DruidDataSource">
+        <property name="username" value="${jdbc.user}"></property>
+        <property name="password" value="${jdbc.pwd}"></property>
+        <property name="driverClassName" value="${jdbc.driver}"></property>
+        <property name="url" value="${jdbc.url}"></property>
+    </bean>
+
+    <!--配置spring和mybatis的整合
+    1.在项目中引入 mybatis整合到spring的适配库-->
+    <bean class="org.mybatis.spring.SqlSessionFactoryBean" id="sqlSessionFactory" >
+        <!--指定mybatis的全局配置文件-->
+        <property name="configLocation" value="classpath:mybatis-config.xml"/>
+        <!--指定数据源-->
+        <property name="dataSource" ref="pooledDataSource"/>
+        <!--指定mybatis的mapper[Mapper.xml]文件位置
+        1.在开发中通常将Mapper.xml放在类路径下的/mapper-->
+        <property name="mapperLocations" value="classpath:mapper/*.xml"/>
+
+    </bean>
+
+    <!--将mybatis接口实现加入到ioc容器-->
+    <!-- 配置扫描器，将 mybatis 接口的实现加入到 ioc 容器中
+    1.我们的mapper接口是放在com.hspedu.furn.dao下
+    2.mybatis就是处于DAO层-->
+    <bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+        <!--
+        1. 扫描所有的 dao 接口的实现，加入到 ioc 容器中
+        2. 这里 dao 接口，就是 mapper 接口
+        -->
+        <property name="basePackage" value="com.hspedu.furns.dao">
+
+        </property>
+    </bean>
+
+</beans>
